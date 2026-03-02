@@ -1,10 +1,51 @@
 package com.host.server.model;
-import javax.annotation.*;
 
+import jakarta.persistence.*;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 
 @Entity
+@Table(name = "Clientes")
 public class Cliente {
+
     @Id
-    @GeneratedValue()
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false, length = 100)
+    private String nome;
+
+    @Column(nullable = false)
+    private String email;
+
+    @Column(nullable = false, length = 11)
+    private int cpf;
+
+    @Column(nullable = false, length = 13)
+    private int registroGeral;
+
+    @Column(nullable = false)
+    private boolean divida;
+
+    public Cliente() {}
+
+    //Getters and Setters
+
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
+
+    public Integer getCpf() {return cpf;}
+    public void setCpf(Integer cpf) {this.cpf = cpf;}
+
+    public Integer getRegistroGeral() {return registroGeral;}
+    public void setRegistroGeral(Integer registroGeral) {this.registroGeral = registroGeral;}
+
+    public String getEmail() {return email;}
+    public void setEmail(String email) {this.email = email;}
+
+    public String getNome() {return nome;}
+    public void setNome(String nome) {this.nome = nome;}
+
+    public boolean getDivida() {return divida;}
+    public void setDivida(boolean divida) {this.divida = divida;}
 }

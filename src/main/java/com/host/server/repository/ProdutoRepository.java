@@ -9,12 +9,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ClienteRepository
-    extends JpaRepository<Cliente, Long> {
+public interface ProdutoRepository extends JpaRepository<Cliente, Long> {
+    List<Cliente> findAll();
 
-        List<Cliente> findAll();
+    Optional<Cliente> searchById(Long id);
 
-        Optional<Cliente> findBynomeContainingIgnoreCase(String nome);
-
-        Optional<Cliente> findById(Long id);
+    Optional<Cliente> findByNomeContainingIgnoreCase(String nome);
 }
