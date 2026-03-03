@@ -1,7 +1,7 @@
 package com.host.server.repository;
 
 
-import com.host.server.model.Cliente;
+import com.host.server.model.Produto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,10 +9,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ProdutoRepository extends JpaRepository<Cliente, Long> {
-    List<Cliente> findAll();
+public interface ProdutoRepository extends JpaRepository<Produto, Long> {
 
-    Optional<Cliente> searchById(Long id);
+    List<Produto> findAll();
 
-    Optional<Cliente> findByNomeContainingIgnoreCase(String nome);
+    Optional<Produto> searchById(Long id);
+
+    Optional<Produto> findByNomeContainingIgnoreCase(String nome);
 }

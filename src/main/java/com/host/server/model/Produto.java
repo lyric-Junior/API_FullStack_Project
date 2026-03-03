@@ -2,6 +2,7 @@ package com.host.server.model;
 
 
 import jakarta.persistence.*;
+import org.springframework.cglib.core.Local;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,7 +30,11 @@ public class Produto {
     @Column(nullable = false)
     private Date ultimaModificacao;
 
+
+
     //String
+
+    public String getId() {return nome;}
 
     public String getNome() {return nome;}
     public void setNome(String nome) {this.nome = nome;}
