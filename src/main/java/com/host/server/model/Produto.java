@@ -2,7 +2,6 @@ package com.host.server.model;
 
 
 import jakarta.persistence.*;
-import org.springframework.cglib.core.Local;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -30,11 +29,15 @@ public class Produto {
     @Column(nullable = false)
     private Date ultimaModificacao;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "produtos")
+    private Venda venda;
 
+    public Venda getVenda() {return venda;}
+    public void setVenda(Venda venda) {this.venda = venda;}
 
     //String
-
-    public String getId() {return nome;}
+    public Long getId() {return id;}
 
     public String getNome() {return nome;}
     public void setNome(String nome) {this.nome = nome;}
@@ -51,3 +54,6 @@ public class Produto {
     public Date getUltimaModificacao() {return ultimaModificacao;}
     public void setUltimaModificacao(Date ultimaModificacao) {this.ultimaModificacao = ultimaModificacao;}
 }
+
+
+
