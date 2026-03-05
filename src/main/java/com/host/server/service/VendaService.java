@@ -15,10 +15,4 @@ public class VendaService {
     @Autowired
     private ProdutoRepository produtoRepository;
 
-    public Venda realizarVenda(Venda venda) {
-        if (venda.get)
-
-        Venda novaVenda = repository.save(venda);
-        return novaVenda;
-    }
 }

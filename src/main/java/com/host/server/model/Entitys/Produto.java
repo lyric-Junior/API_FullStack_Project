@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "Produtos")
@@ -33,10 +34,10 @@ public class Produto {
     @JoinColumn(name = "produtos")
     private Venda venda;
 
+    //String
     public Venda getVenda() {return venda;}
     public void setVenda(Venda venda) {this.venda = venda;}
 
-    //String
     public Long getId() {return id;}
 
     public String getNome() {return nome;}
