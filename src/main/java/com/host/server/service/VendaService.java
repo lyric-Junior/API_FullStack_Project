@@ -1,7 +1,7 @@
 package com.host.server.service;
 
 
-import com.host.server.model.Venda;
+import com.host.server.model.Entitys.Venda;
 import com.host.server.repository.ProdutoRepository;
 import com.host.server.repository.VendaRepository;
 import org.springframework.beans.factory.annotation.Autowired;

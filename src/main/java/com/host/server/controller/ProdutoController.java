@@ -1,11 +1,8 @@
 package com.host.server.controller;
 
 
-import com.host.server.model.Cliente;
-import com.host.server.model.Produto;
-import com.host.server.service.ClienteService;
+import com.host.server.model.Entitys.Produto;
 import com.host.server.service.ProdutoService;
-import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

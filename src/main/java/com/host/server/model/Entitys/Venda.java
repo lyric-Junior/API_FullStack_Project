@@ -1,4 +1,4 @@
-package com.host.server.model;
+package com.host.server.model.Entitys;
 
 
 import jakarta.persistence.*;
@@ -42,6 +42,16 @@ public class Venda {
     public List<Produto> getProdutos() {return produtos;}
     public void setProdutos(List<Produto> produtos) {this.produtos = produtos;}
 
+    public Usuario getVendedor() {return vendedor;}
+    public void setVendedor(Usuario vendedor) {this.vendedor = vendedor;}
 
+    public String getDescricao() {return descricao;}
+    public void setDescricao(String descricao) {this.descricao = descricao;}
+
+    public String getTipoDeVenda() {return tipoDeVenda;}
+    public void setTipoDeVenda(String tipoDeVenda) {this.tipoDeVenda = tipoDeVenda;}
+
+    public String getPlano() {return plano;}
+    public void setPlano(String plano) {this.plano = plano;}
 
 }

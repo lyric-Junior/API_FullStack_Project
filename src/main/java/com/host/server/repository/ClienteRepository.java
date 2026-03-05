@@ -1,20 +1,15 @@
 package com.host.server.repository;
-
-
-import com.host.server.model.Cliente;
+//import classe cliente
+import com.host.server.model.Entitys.Cliente;
+//unico import necessário para extender a interface com JpaRepository
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
+//utilizado para buscar listas clientes
 import java.util.Optional;
 
-@Repository
+
 public interface ClienteRepository
     extends JpaRepository<Cliente, Long> {
-
-        List<Cliente> findAll();
-
-        Optional<Cliente> findBynomeContainingIgnoreCase(String nome);
-
-        Optional<Cliente> findById(Long id);
+    //outros métodos são aplicados diretamente no JpaRepository que já entrega diversos métodos prontos
+    Optional<Cliente> findByNomeContainingCase(String nome);
 }
+

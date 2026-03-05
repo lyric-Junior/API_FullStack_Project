@@ -2,7 +2,7 @@ package com.host.server.service;
 
 
 
-import com.host.server.model.Produto;
+import com.host.server.model.Entitys.Produto;
 import com.host.server.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

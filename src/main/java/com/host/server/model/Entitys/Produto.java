@@ -1,4 +1,4 @@
-package com.host.server.model;
+package com.host.server.model.Entitys;
 
 
 import jakarta.persistence.*;

@@ -1,7 +1,7 @@
 package com.host.server.controller;
 
 
-import com.host.server.model.Cliente;
+import com.host.server.model.Entitys.Cliente;
 import com.host.server.service.ClienteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,12 +27,12 @@ public class ClienteController {
     }
 
     @PostMapping("/salvarCliente")
-    public ResponseEntity<String> salvarCliente(@RequestParam Model model, Cliente cliente) {
+    public ResponseEntity<String> salvarCliente(@RequestBody Cliente cliente) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body("Usário criado com sucesso");
+                .body("Usuário criado com sucesso");
     }
     @PostMapping("/editarCliente/{id}")
-    public ResponseEntity<Cliente> editarCliente(@PathVariable Long id) {
+    public ResponseEntity<Cliente> editarCliente(@RequestParam Long id) {
         Cliente cliente = clienteService.searchById(id);
         return ResponseEntity.ok(cliente);
     }

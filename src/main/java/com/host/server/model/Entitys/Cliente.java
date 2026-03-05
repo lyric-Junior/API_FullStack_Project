@@ -1,13 +1,12 @@
-package com.host.server.model;
+package com.host.server.model.Entitys;
 
 import jakarta.persistence.*;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 
 @Entity
 @Table(name = "Clientes")
 public class Cliente {
 
+    //Getters and Setters
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,8 +27,6 @@ public class Cliente {
     private boolean divida;
 
     public Cliente() {}
-
-    //Getters and Setters
 
     public Long getId() {return id;}
     public void setId(Long id) {this.id = id;}
