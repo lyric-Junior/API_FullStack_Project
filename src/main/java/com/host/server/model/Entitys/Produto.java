@@ -31,7 +31,7 @@ public class Produto {
     private Date ultimaModificacao;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "produtos")
+    @JoinColumn(name = "produtos_id")
     private Venda venda;
 
     //String
