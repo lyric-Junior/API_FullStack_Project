@@ -6,18 +6,41 @@ import lombok.Setter;
 
 public class ClienteDTO {
 
-    @Getter @Setter
+
+    private Long id;
+
     private String nome;
-    @Getter @Setter
+
     private String email;
-    @Getter @Setter
-    private String cpf;
-    @Getter @Setter
+
     private String RG;
-    @Getter
-    private String divida;
+
+    private String cpf;
+
+    private boolean divida;
+
+    private String senha;
 
     public ClienteDTO() {};
 
-    public void setDivida() {this.divida = divida;}
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
+
+    public String getNome() {return nome;}
+    public void setNome(String nome) {this.nome = nome;}
+
+    public String getEmail() {return email;}
+    public void setEmail(String email) {this.email = email;}
+
+    public String getRG() {return RG;}
+    public void setRG(String RG) {this.RG = RG;}
+
+    public String getCpf() {return cpf;}
+    public void setCpf(String cpf) {this.cpf = cpf;}
+
+    public boolean isDivida() {return divida;}
+    public void setDivida(boolean divida) {this.divida = divida;}
+
+    public String getSenha() {return senha;}
+    public void setSenha(String senhaHash) {this.senha = senhaHash;}
 }
