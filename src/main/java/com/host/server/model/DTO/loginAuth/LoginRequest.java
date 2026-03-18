@@ -1,4 +1,4 @@
-package com.host.server.model.DTO;
+package com.host.server.model.DTO.loginAuth;
 
 
 import org.springframework.stereotype.Component;

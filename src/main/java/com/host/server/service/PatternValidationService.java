@@ -29,8 +29,11 @@ public class PatternValidationService {
 
     public static final Pattern NOME_PRODUTO_PATTERN = Pattern.compile("^[A-Za-z0-9_#()]+$");
 
+    public static final Pattern NOME_CLIENTE_PATTERN = Pattern.compile("^[A-Za-z0-9_-]+$");
+
     public static final Pattern PASSWORD_PATTERN = Pattern
             .compile("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[!@#$%&*\\[\\]{}()?/\\\\|_\\-+=])[A-Za-z\\d!@#$%&*\\[\\]{}()?/\\\\|_\\-+=]{8,}$");
+
 
     public void validateUser(UsuarioDTO user) {
         //repo validations
@@ -82,6 +85,12 @@ public class PatternValidationService {
             throw new RuntimeException("The products list can't be empty!");
         } else if (!NOME_PRODUTO_PATTERN.matcher(plano.getTipoDePlano()).matches()) {
             throw new IllegalArgumentException("The plan type is not valid!");
+        } else if (plano.getValor() == null) {
+            throw new IllegalArgumentException("The plan value can't be empty!");
+        } else if (plano.getDescricao().length() > 300) {
+            throw new IllegalArgumentException("The description is too big! max = 300");
+        } else if (plano.getTipoDePlano().length() > 20) {
+            throw new IllegalArgumentException("The plan type is too big! max = 20");
         }
     }
 }

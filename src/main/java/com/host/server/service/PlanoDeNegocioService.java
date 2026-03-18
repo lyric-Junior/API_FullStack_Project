@@ -16,11 +16,18 @@ public class PlanoDeNegocioService {
 
     @Autowired
     private UsuarioRepository userRepo;
+
     public PlanoDeNegocio cadastrarPlanoDeNegocio(PlanoDeNegocio plano, UsuarioDTO user) {
         PlanoDeNegocio novoPlano = new PlanoDeNegocio();
-
+        //Validations
         patternValidationService.validateUser(user);
+        patternValidationService.validatePlanoDeNegocioToCreate(plano);
 
+        novoPlano.setTipoDePlano(plano.getTipoDePlano());
+        novoPlano.setDescricao(plano.getDescricao());
+        novoPlano.setProdutos(plano.getProdutos());
+        novoPlano.setValor(plano.getValor());
 
+        return planoRepo.save(novoPlano);
     }
 }
