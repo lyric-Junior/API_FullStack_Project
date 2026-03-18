@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class VendaService {
 
@@ -31,6 +32,42 @@ public class VendaService {
             .compile("^[a-zA-Z0-9_+&*-]+(?:\\\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\\\.)+[a-zA-Z]{2,7}$");
     private static final Pattern NOME_USUARIO_PATTERN = Pattern
             .compile("^[A-Z0-9]+(?:-[A-Z0-9]+)*$");
+
+    private static final Pattern EMAIL_PATTERN = Pattern
+            .compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
+
+    private List<Produto> convertProductDTOToProduto(List<ProdutoDTO> produtosDTOList) {
+        List<Produto> produtos = produtoRepo.findAllById(produtosDTOList.stream().map(ProdutoDTO::getId).collect(Collectors.toList()));
+        return produtos;
+    }
+
+    public List<Venda> listarVendas(Usuario user) {
+        //verifica se o usuario é adm
+        if (!user.isAdmin()) {
+            throw new RuntimeException("O usuário não é um admin");
+        }
+        //repo validations
+        else if (!userRepo.existsById(user.getId())) {
+            throw new RuntimeException("O usuário não existe");
+        }
+        //Patterns
+        else if (!EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
+            throw new IllegalArgumentException("O email do usuário é inválido");
+        } else if (!NOME_USUARIO_PATTERN.matcher(user.getUserName()).matches()) {
+            throw new IllegalArgumentException("O nome do usuario é inválido");
+        }
+        //Lengths
+        else if (user.getUserName().length() > 20) {
+            throw new IllegalArgumentException("O nome do usuário é muito grande. max = 20");
+        }
+
+        else if (user.getId() == null) {
+            throw new RuntimeException("O usuário não possui um id ou não foi informado.");
+        }
+        return vendaRepo.findAll();
+
+    }
+
 
     public void adicionarItem(Venda venda, Usuario user, Produto produto) {
         Produto produto1 = produtoRepo.findById(produto.getId())
@@ -100,5 +137,73 @@ public class VendaService {
 
         return vendaRepo.save(novaVenda);
     }
+    public void deletarVenda(Usuario user, Long id) {
+        Venda venda = vendaRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("A venda não pode ser encontrada"));
+    //User global Validation
+        if (!user.isAdmin()) {
+        throw new RuntimeException("O usuário não é um admin");
+    }
+    //repo validations
+        else if (!userRepo.existsById(user.getId())) {
+        throw new RuntimeException("O usuário não existe");
+    }
+    //Patterns
+        else if (!EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
+        throw new IllegalArgumentException("O email do usuário é inválido");
+    } else if (!NOME_USUARIO_PATTERN.matcher(user.getUserName()).matches()) {
+        throw new IllegalArgumentException("O nome do usuario é inválido");
+    }
+    //Lengths
+        else if (user.getUserName().length() > 20) {
+        throw new IllegalArgumentException("O nome do usuário é muito grande. max = 20");
+    }
 
+        else if (user.getId() == null) {
+        throw new RuntimeException("O usuário não possui um id ou não foi informado.");
+        }
+        vendaRepo.deleteById(id);
+    }
+
+    public void editarVenda(VendaDTO dto, UsuarioDTO user) {
+        Venda venda = vendaRepo.findById(dto.getId())
+                .orElseThrow(() -> new RuntimeException("A venda não pode ser encontrada ou não existe"));
+
+        //verifica se o usuario é adm
+        if (!user.isAdmin()) {
+            throw new RuntimeException("O usuário não é um admin");
+        }
+        //repo validations
+        else if (!userRepo.existsById(user.getId())) {
+            throw new RuntimeException("O usuário não existe");
+        }
+        //Patterns
+        else if (!EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
+            throw new IllegalArgumentException("O email do usuário é inválido");
+        } else if (!NOME_USUARIO_PATTERN.matcher(user.getUserName()).matches()) {
+            throw new IllegalArgumentException("O nome do usuario é inválido");
+        }
+        //Lengths
+        else if (user.getUserName().length() > 20) {
+            throw new IllegalArgumentException("O nome do usuário é muito grande. max = 20");
+        }
+
+        else if (user.getId() == null) {
+            throw new RuntimeException("O usuário não possui um id ou não foi informado.");
+        }
+
+        List<Produto> produtos = produtoRepo.findAllById(dto.getProdutos()
+                .stream()
+                .map(ProdutoDTO::getId)
+                .collect(Collectors.toList()));
+
+        venda.atualizarProduto(produtos);
+        venda.setPlano(dto.getPlano());
+        venda.setTipoDeVenda(dto.getTipoDeVenda());
+        venda.setDescricao(dto.getDescricao());
+        venda.setPlano(dto.getPlano());
+        venda.setVendedor(dto.getVendedor());
+
+        vendaRepo.save(venda);
+    }
 }

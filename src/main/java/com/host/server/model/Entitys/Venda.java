@@ -54,4 +54,9 @@ public class Venda {
     public PlanoDeNegocio getPlano() {return plano;}
     public void setPlano(PlanoDeNegocio plano) {this.plano = plano;}
 
+    public void atualizarProduto(List<Produto> novoProdutos) {
+        this.produtos.clear();
+        this.produtos.addAll(novoProdutos);
+    }
+
 }

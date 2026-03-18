@@ -23,9 +23,15 @@ public class Usuario {
     @Column(nullable = false)
     private String senhaHash;
 
+    @Column
+    private String cpfHash;
+
     @Column(nullable = false)
     private LocalDateTime dataDeCadastro;
 
+    //Getters and Setters
+    public String getCpfHash() {return cpfHash;}
+    public void setCpfHash(String cpfHash) {this.cpfHash = cpfHash;}
 
     public String getEmail() {return email;}
     public void setEmail(String email) {this.email = email;}

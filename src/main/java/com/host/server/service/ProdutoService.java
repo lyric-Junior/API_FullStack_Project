@@ -17,6 +17,9 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.host.server.service.PatternValidationService.EMAIL_PATTERN;
+import static com.host.server.service.PatternValidationService.NOME_USUARIO_PATTERN;
+
 public class ProdutoService {
 
     @Autowired
@@ -24,12 +27,6 @@ public class ProdutoService {
 
     @Autowired
     private UsuarioRepository userRepo;
-
-    private static final Pattern NOME_USUARIO_PATTERN = Pattern.compile("^[\\p{L} _-]+$");
-
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
-
-    private static final Pattern NOME_PRODUTO_PATTERN = Pattern.compile("^[A-Za-z0-9_#()]+$");
 
     private ProdutoDTO convertProductToDTO(Produto produto) {
         ProdutoDTO dto = new ProdutoDTO();
@@ -100,13 +97,6 @@ public class ProdutoService {
             throw new RuntimeException("O usuário não possui um id ou não foi informado.");
         }
 
-
-        //Patterns
-        else if (!EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
-            throw new RuntimeException("O email do usuário é inválido");
-        } else if (!NOME_USUARIO_PATTERN.matcher(user.getUserName()).matches()) {
-            throw new RuntimeException("O nome do usuário é inválido");
-        }
         produtoRepository.deleteById(id);
     }
 
