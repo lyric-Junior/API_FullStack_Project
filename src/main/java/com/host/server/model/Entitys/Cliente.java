@@ -2,6 +2,8 @@ package com.host.server.model.Entitys;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "Clientes")
 public class Cliente {
@@ -29,7 +31,19 @@ public class Cliente {
     @Column(nullable = false)
     private boolean divida;
 
+    @Column
+    private LocalDateTime dataDeCadastro;
+
+    @Column
+    private LocalDateTime ultimaEdicao;
+
     public Cliente() {}
+
+    public LocalDateTime getUltimaEdicao() {return ultimaEdicao;}
+    public void setUltimaEdicao(LocalDateTime ultimaEdicao) {this.ultimaEdicao = ultimaEdicao;}
+
+    public LocalDateTime getDataDeCadastro() {return dataDeCadastro;}
+    public void setDataDeCadastro(LocalDateTime dataDeCadastro) {this.dataDeCadastro = dataDeCadastro;}
 
     public Long getId() {return id;}
     public void setId(Long id) {this.id = id;}

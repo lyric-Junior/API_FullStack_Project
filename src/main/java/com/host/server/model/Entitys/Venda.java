@@ -20,9 +20,9 @@ public class Venda {
     private String tipoDeVenda;
 
     @Column(nullable = false, length = 20)
-    private String plano;
+    private PlanoDeNegocio plano;
 
-    @Column(length = 300, nullable = false)
+    @Column(length = 300)
     private String descricao;
 
     @Column(nullable = false, length = 50)
@@ -51,7 +51,7 @@ public class Venda {
     public String getTipoDeVenda() {return tipoDeVenda;}
     public void setTipoDeVenda(String tipoDeVenda) {this.tipoDeVenda = tipoDeVenda;}
 
-    public String getPlano() {return plano;}
-    public void setPlano(String plano) {this.plano = plano;}
+    public PlanoDeNegocio getPlano() {return plano;}
+    public void setPlano(PlanoDeNegocio plano) {this.plano = plano;}
 
 }

@@ -14,6 +14,9 @@ public class Usuario {
     @Column(unique = true, nullable = false, length = 20)
     private String userName;
 
+    @Column
+    private String email;
+
     @Column(unique = true, nullable = true)
     public boolean admin;
 
@@ -23,6 +26,9 @@ public class Usuario {
     @Column(nullable = false)
     private LocalDateTime dataDeCadastro;
 
+
+    public String getEmail() {return email;}
+    public void setEmail(String email) {this.email = email;}
 
     public LocalDateTime getDataDeCadastro() {return dataDeCadastro;}
     public void setDataDeCadastro(LocalDateTime dataDeCadastro) {this.dataDeCadastro = LocalDateTime.now();}
@@ -36,6 +42,6 @@ public class Usuario {
     public Long getId() {return id;}
     protected void setId(Long id) {this.id = id;}
 
-    public boolean getAdmin() {return admin;}
+    public boolean isAdmin() {return admin;}
     protected void setAdmin(boolean admin) {this.admin = admin;}
 }
