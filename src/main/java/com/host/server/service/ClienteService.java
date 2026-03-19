@@ -137,6 +137,4 @@ public class ClienteService {
 
         return clienteRepository.save(novoCliente);
     }
-
-
 }
