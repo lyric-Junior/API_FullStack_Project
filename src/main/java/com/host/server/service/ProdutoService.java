@@ -1,32 +1,25 @@
 package com.host.server.service;
 
-import com.host.server.model.DTO.ProdutoDTO;
-import com.host.server.model.DTO.UsuarioDTO;
-import com.host.server.model.Entitys.Produto;
-import com.host.server.model.ServerSecurity.SecurityConfig;
+import com.host.server.model.dto.ProdutoDTO;
+import com.host.server.model.entitys.Produto;
 import com.host.server.repository.ProdutoRepository;
-import com.host.server.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.host.server.service.PatternValidationService.EMAIL_PATTERN;
-import static com.host.server.service.PatternValidationService.NOME_USUARIO_PATTERN;
+import static com.host.server.service.ValidationService.NOME_USUARIO_PATTERN;
 
+@Service
 public class ProdutoService {
 
     @Autowired
     private ProdutoRepository produtoRepository;
 
     @Autowired
-    private UsuarioRepository userRepo;
+    private ValidationService validationService;
 
     private ProdutoDTO convertProductToDTO(Produto produto) {
         ProdutoDTO dto = new ProdutoDTO();
@@ -39,84 +32,29 @@ public class ProdutoService {
         return dto;
     }
 
-    public List<ProdutoDTO> listarProdutos(UsuarioDTO user) {
+    public List<ProdutoDTO> listarProdutos() {
         List<Produto> produtos = produtoRepository.findAll();
-        //verifica se o usuario é adm
-        if (!user.isAdmin()) {
-            throw new RuntimeException("O usuário não é um admin");
-        }
-        //repo validations
-        else if (!userRepo.existsById(user.getId())) {
-            throw new RuntimeException("O usuário não existe");
-        }
-        //Patterns
-        else if (!EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
-            throw new IllegalArgumentException("O email do usuário é inválido");
-        } else if (!NOME_USUARIO_PATTERN.matcher(user.getUserName()).matches()) {
-            throw new IllegalArgumentException("O nome do usuario é inválido");
-        }
-        //Lengths
-        else if (user.getUserName().length() > 20) {
-            throw new IllegalArgumentException("O nome do usuário é muito grande. max = 20");
-        }
-
-        else if (user.getId() == null) {
-            throw new RuntimeException("O usuário não possui um id ou não foi informado.");
-        }
-
         return produtos.stream()
                 .map(this::convertProductToDTO)
                 .collect(Collectors.toList());
     }
 
-    public void deletarProduto(Long id, UsuarioDTO user) {
+    public void deletarProduto(Long id) {
         //Busca pelo produto
         if (!produtoRepository.existsById(id)) {
             throw new IllegalArgumentException("O produto selecionado não existe");
-        }
-        //User global Validation
-        if (!user.isAdmin()) {
-            throw new RuntimeException("O usuário não é um admin");
-        }
-        //repo validations
-        else if (!userRepo.existsById(user.getId())) {
-            throw new RuntimeException("O usuário não existe");
-        }
-        //Patterns
-        else if (!EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
-            throw new IllegalArgumentException("O email do usuário é inválido");
-        } else if (!NOME_USUARIO_PATTERN.matcher(user.getUserName()).matches()) {
-            throw new IllegalArgumentException("O nome do usuario é inválido");
-        }
-        //Lengths
-        else if (user.getUserName().length() > 20) {
-            throw new IllegalArgumentException("O nome do usuário é muito grande. max = 20");
-        }
-
-        else if (user.getId() == null) {
-            throw new RuntimeException("O usuário não possui um id ou não foi informado.");
         }
 
         produtoRepository.deleteById(id);
     }
 
-    public Produto cadastrarProduto(Produto produtoDTO, UsuarioDTO user) {
+    public Produto cadastrarProduto(ProdutoDTO produtoDTO) {
         Produto novoProduto = new Produto();
-        //Validações dentro do banco de dados
-        if (!userRepo.existsById(user.getId())) {
-            throw new IllegalArgumentException("o usuário não existe");
-        } else if (!produtoRepository.existsById(produtoDTO.getId())) {
+
+        if (produtoRepository.existsById(produtoDTO.getId())) {
             throw new RuntimeException("O produto já existe");
-        }
-        //Validações de formatação de valores
-        else if (EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
-            throw new RuntimeException("O email do usuário é inválido");
-        } else if (NOME_USUARIO_PATTERN.matcher(user.getUserName()).matches()) {
-            throw new IllegalArgumentException("O nome do usuário é inválido");
         } else if (produtoDTO.getDescricao().length() > 300) {
             throw new IllegalArgumentException("A descrição do produto é muito grande");
-        } else if (produtoDTO.getNome().matches("^[A-Z0-9]$")) {
-            throw new RuntimeException("O nome de usuario é inválido");
         }
 
         novoProduto.setValor(produtoDTO.getValor());
@@ -127,7 +65,7 @@ public class ProdutoService {
         return produtoRepository.save(novoProduto);
     }
 
-    public void editarProduto(ProdutoDTO produto, Long id, UsuarioDTO user) {
+    public void editarProduto(ProdutoDTO produto, Long id) {
         Produto produtoExistente = produtoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("O produto não pode ser encontrado"));
         if (produto.getNome().isEmpty()) {

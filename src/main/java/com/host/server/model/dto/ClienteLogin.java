@@ -1,8 +1,5 @@
-package com.host.server.model.DTO;
+package com.host.server.model.dto;
 
-
-import lombok.Getter;
-import lombok.Setter;
 
 public class ClienteLogin {
 

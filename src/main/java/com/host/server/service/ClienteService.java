@@ -1,22 +1,20 @@
 package com.host.server.service;
 
-import com.host.server.model.DTO.ClienteDTO;
-import com.host.server.model.DTO.ClienteLogin;
-import com.host.server.model.DTO.UsuarioDTO;
-import com.host.server.model.Entitys.Cliente;
-import com.host.server.model.Entitys.Usuario;
+import com.host.server.model.dto.ClienteDTO;
+import com.host.server.model.dto.UsuarioDTO;
+import com.host.server.model.entitys.Cliente;
+import com.host.server.model.entitys.Usuario;
 import com.host.server.repository.ClienteRepository;
 import com.host.server.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.password.CompromisedPasswordException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.host.server.service.PatternValidationService.*;
-
+@Service
 public class ClienteService {
 
     //Classes que serão utilizadas dentro do código
@@ -27,10 +25,10 @@ public class ClienteService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private UsuarioRepository userRepo;
+    private ValidationService validationService;
 
     @Autowired
-    private PatternValidationService patternValidationService;
+    private UsuarioRepository userRepo;
 
     //Funções privadas como o converter para DTO
     private ClienteDTO convertToClienteDTO(Cliente cliente) {
@@ -40,8 +38,7 @@ public class ClienteService {
         dto.setEmail(cliente.getEmail());
         return dto;
     }
-    //Função opcional para futura refatoracao
-    /*
+
     private UsuarioDTO convertUserDTO(Usuario usuario) {
         UsuarioDTO userDTO = new UsuarioDTO();
 
@@ -50,34 +47,10 @@ public class ClienteService {
         userDTO.setId(usuario.getId());
 
         return userDTO;
-    }*/
+    }
 
     //Lista de clientes
-    public List<ClienteDTO> listarClientes(Usuario user) {
-        // "!isAdmin"
-        //verifica se o usuario é adm
-        if (!user.isAdmin()) {
-            throw new RuntimeException("O usuário não é um admin");
-        }
-        //repo validations
-        else if (!userRepo.existsById(user.getId())) {
-            throw new RuntimeException("O usuário não existe");
-        }
-        //Patterns
-        else if (!EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
-            throw new IllegalArgumentException("O email do usuário é inválido");
-        } else if (!NOME_USUARIO_PATTERN.matcher(user.getUserName()).matches()) {
-            throw new IllegalArgumentException("O nome do usuario é inválido");
-        }
-        //Lengths
-        else if (user.getUserName().length() > 20) {
-            throw new IllegalArgumentException("O nome do usuário é muito grande. max = 20");
-        }
-
-        else if (user.getId() == null) {
-            throw new RuntimeException("O usuário não possui um id ou não foi informado.");
-        }
-
+    public List<ClienteDTO> listarClientes() {
         List<Cliente> clientes = clienteRepository.findAll();
 
         return clientes.stream()
@@ -86,28 +59,17 @@ public class ClienteService {
     }
 
     //Deletar cliente
-    public void deletarCliente(ClienteDTO cliente, UsuarioDTO user) {
-        //Client Validations
-        if (cliente.getNome().length() > 100) {
-            throw new RuntimeException("O nome do cliente é inválido. max = 100 caracteres");
-        } else if(cliente.getCpf().length() > 11 ) {
-            throw new RuntimeException("O CPF do cliente é inválido. max = 11 caracteres");
-        } else if (!clienteRepository.existsById(cliente.getId())) {
-            throw new RuntimeException("O cliente não existe ou não pode ser encontrado.");
-        }
-        //User validator
-        patternValidationService.validateUser(user);
-
-        clienteRepository.deleteById(cliente.getId());
+    public void deletarCliente(Long id) {
+        clienteRepository.deleteById(id);
     }
+
     //Função para editar o cliente
-    public Cliente editarCliente(ClienteDTO cliente, UsuarioDTO user) {
+    public Cliente editarCliente(ClienteDTO cliente) {
         //Puxando o cliente ja existente
         Cliente clienteExistente = clienteRepository.findById(cliente.getId())
                 .orElseThrow(() -> new RuntimeException("O id do cliente não é o correto ou inválido"));
         //Validations
-        patternValidationService.validateCliente(cliente);
-        patternValidationService.validateUser(user);
+        validationService.validateCliente(cliente);
 
         clienteExistente.setNome(cliente.getNome().toUpperCase());
         clienteExistente.setEmail(cliente.getEmail());
@@ -116,10 +78,9 @@ public class ClienteService {
         return clienteRepository.save(clienteExistente);
     }
     //Cadastrar cliente
-    public Cliente cadastrarCliente(ClienteDTO cliente, UsuarioDTO user) {
+    public Cliente cadastrarCliente(ClienteDTO cliente) {
 
-        patternValidationService.validateCliente(cliente);
-        patternValidationService.validateUser(user);
+        validationService.validateCliente(cliente);
 
         Cliente novoCliente = new Cliente();
 
@@ -133,7 +94,7 @@ public class ClienteService {
         novoCliente.setEmail(cliente.getEmail());
         novoCliente.setCpf(cpfHash);
         novoCliente.setRegistroGeral(rgHash);
-        novoCliente.setSenha(senhaHash);
+        novoCliente.setSenhaHash(senhaHash);
 
         return clienteRepository.save(novoCliente);
     }

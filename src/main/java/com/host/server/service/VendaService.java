@@ -1,209 +1,237 @@
 package com.host.server.service;
 
-import com.host.server.model.DTO.ProdutoDTO;
-import com.host.server.model.DTO.UsuarioDTO;
-import com.host.server.model.DTO.VendaDTO;
-import com.host.server.model.Entitys.Produto;
-import com.host.server.model.Entitys.Usuario;
-import com.host.server.model.Entitys.Venda;
-import com.host.server.repository.ProdutoRepository;
-import com.host.server.repository.UsuarioRepository;
-import com.host.server.repository.VendaRepository;
+import com.host.server.model.dto.UsuarioDTO;
+import com.host.server.model.dto.VendaDTO;
+import com.host.server.model.dto.VendaItemDTO;
+import com.host.server.model.dto.VendaResponseDTO;
+import com.host.server.model.entitys.*;
+import com.host.server.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Service
 public class VendaService {
 
     @Autowired
-    private VendaRepository vendaRepo;
+    private VendaRepository vendaRepository;
+    @Autowired
+    private VendaItemRepository vendaItemRepository;
+    @Autowired
+    private ProdutoRepository produtoRepository;
+    @Autowired
+    private ClienteRepository clienteRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private UsuarioRepository userRepo;
+    private PlanoDeNegocioRepository planoRepository;
 
-    @Autowired
-    private ProdutoRepository produtoRepo;
+    private BigDecimal calcularTotalVenda(Venda venda) {
+        if (venda.getItens() == null || venda.getItens().isEmpty()) {
+            return BigDecimal.ZERO;
+        }
 
-    private static final Pattern EMAIL_USUARIO_PATTERN = Pattern
-            .compile("^[a-zA-Z0-9_+&*-]+(?:\\\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\\\.)+[a-zA-Z]{2,7}$");
-    private static final Pattern NOME_USUARIO_PATTERN = Pattern
-            .compile("^[A-Z0-9]+(?:-[A-Z0-9]+)*$");
-
-    private static final Pattern EMAIL_PATTERN = Pattern
-            .compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$");
-
-    private List<Produto> convertProductDTOToProduto(List<ProdutoDTO> produtosDTOList) {
-        List<Produto> produtos = produtoRepo.findAllById(produtosDTOList.stream().map(ProdutoDTO::getId).collect(Collectors.toList()));
-        return produtos;
+        return venda.getItens().stream()
+                .map(item -> item.getPrecoUnitario()
+                        .multiply(BigDecimal.valueOf(item.getQuantidade())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public List<Venda> listarVendas(Usuario user) {
-        //verifica se o usuario é adm
-        if (!user.isAdmin()) {
-            throw new RuntimeException("O usuário não é um admin");
-        }
-        //repo validations
-        else if (!userRepo.existsById(user.getId())) {
-            throw new RuntimeException("O usuário não existe");
-        }
-        //Patterns
-        else if (!EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
-            throw new IllegalArgumentException("O email do usuário é inválido");
-        } else if (!NOME_USUARIO_PATTERN.matcher(user.getUserName()).matches()) {
-            throw new IllegalArgumentException("O nome do usuario é inválido");
-        }
-        //Lengths
-        else if (user.getUserName().length() > 20) {
-            throw new IllegalArgumentException("O nome do usuário é muito grande. max = 20");
+    private VendaResponseDTO converterParaResponseDTO(Venda venda, BigDecimal total) {
+        VendaResponseDTO response = new VendaResponseDTO();
+        response.setId(venda.getId());
+        response.setDataVenda(venda.getDataVenda());
+        response.setTipoDeVenda(venda.getTipoDeVenda());
+        response.setDescricao(venda.getDescricao());
+        response.setTotalVenda(total);
+
+        if (venda.getCliente() != null) {
+            response.setClienteId(venda.getCliente().getId());
+            response.setClienteNome(venda.getCliente().getNome());
         }
 
-        else if (user.getId() == null) {
-            throw new RuntimeException("O usuário não possui um id ou não foi informado.");
+        if (venda.getVendedor() != null) {
+            response.setVendedorId(venda.getVendedor().getId());
+            response.setVendedorNome(venda.getVendedor().getUserName());
         }
-        return vendaRepo.findAll();
 
+        if (venda.getPlano() != null) {
+            response.setPlanoId(venda.getPlano().getId());
+            response.setPlanoTipo(venda.getPlano().getTipoDePlano());
+        }
+
+        List<VendaItemDTO> itensDTO = venda.getItens().stream()
+                .map(this::converterItemParaDTO)
+                .collect(Collectors.toList());
+        response.setItens(itensDTO);
+
+        return response;
     }
 
+    private VendaItemDTO converterItemParaDTO(VendaItem item) {
+        VendaItemDTO dto = new VendaItemDTO();
 
-    public void adicionarItem(Venda venda, Usuario user, Produto produto) {
-        Produto produto1 = produtoRepo.findById(produto.getId())
-                .orElseThrow(() -> new RuntimeException("O produto não pode ser encontrado"));
+        dto.setId(item.getId());
+        dto.setProdutoId(item.getProduto().getId());
+        dto.setProdutoNome(item.getProduto().getNome());
+        dto.setQuantidade(item.getQuantidade());
+        dto.setPrecoUnitario(item.getPrecoUnitario());
+        dto.setSubtotal(item.getSubtotal());
 
-        if (venda.getTipoDeVenda().length() > 20) {
-            throw new IllegalArgumentException("O tipo de venda tem o nome muito grande e é inválido.");
-        }
-        if (!user.isAdmin()) {
-            throw new RuntimeException("O usuário não é um admin");
-        }
-        //repo validations
-        else if (!userRepo.existsById(user.getId())) {
-            throw new RuntimeException("O usuário não existe");
-        }
-        //Patterns
-        else if (!EMAIL_USUARIO_PATTERN.matcher(user.getEmail()).matches()) {
-            throw new IllegalArgumentException("O email do usuário é inválido");
-        } else if (!NOME_USUARIO_PATTERN.matcher(user.getUserName()).matches()) {
-            throw new IllegalArgumentException("O nome do usuario é inválido");
-        }
-        //Lengths
-        else if (user.getUserName().length() > 20) {
-            throw new IllegalArgumentException("O nome do usuário é muito grande. max = 20");
-        } else if (user.getEmail().length() > 255) {
-            throw new IllegalArgumentException("O email do usuário é muito grande. max = 255");
-        }
-        else if (user.getId() == null) {
-            throw new RuntimeException("O usuário não possui um id ou não foi informado.");
-        }
-
-        List<Produto> produtosVenda = venda.getProdutos();
-        //adiciona o produto a lista
-        produtosVenda.add(produto1);
+        return dto;
     }
 
-    public Venda cadastrarVenda(UsuarioDTO user, VendaDTO dto, List<ProdutoDTO> produtos) {
-        Venda novaVenda = new Venda();
+    @Transactional
+    public VendaResponseDTO criarVenda(VendaDTO vendaDTO, UsuarioDTO user) {
+        //User Repo
+        Usuario vendedor = usuarioRepository.findById(user.getId())
+                .orElseThrow(() -> new RuntimeException("Vendedor não encontrado"));
+        //User Repo
+        Cliente cliente = clienteRepository.findById(vendaDTO.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
-        //Validar usuario
-        if (!user.isAdmin()) {
-            throw new IllegalArgumentException("O usuário não tem permissão para cadastrar uma venda");
-        }else if (userRepo.existsById(user.getId())) {
-            throw new IllegalArgumentException("O usuário não existe ou não foi encontrado");
+        //Setters
+        Venda venda = new Venda();
+        venda.setVendedor(vendedor);
+        venda.setCliente(cliente);
+        venda.setDataVenda(LocalDateTime.now());
+        venda.setTipoDeVenda(vendaDTO.getTipoDeVenda());
+        venda.setDescricao(vendaDTO.getDescricao());
+
+        if (vendaDTO.getPlanoId() != null) {
+            PlanoDeNegocio plano = planoRepository.findById(vendaDTO.getPlanoId())
+                    .orElseThrow(() -> new RuntimeException("Plan not found!"));
+            venda.setPlano(plano);
         }
-        //Patterns
-        else if (!NOME_USUARIO_PATTERN.matcher(user.getUserName()).matches()) {
-            throw new IllegalArgumentException("O nome do usuário é inválido");
-        } else if (!EMAIL_USUARIO_PATTERN.matcher(user.getEmail()).matches()) {
-            throw new IllegalArgumentException("O email do usuário é inválido");
+
+        Venda vendaSalva = vendaRepository.save(venda);
+
+        BigDecimal totalVenda = BigDecimal.ZERO;
+
+        for (VendaItemDTO itemDTO : vendaDTO.getItens()) {
+            VendaItem item = criarItemVenda(itemDTO, vendaSalva);
+            vendaSalva.getItens().add(item);
+            totalVenda = totalVenda.add(item.getSubtotal());
         }
-        //Lengths
-        else if (user.getUserName().length() > 20) {
-            throw new IllegalArgumentException("O nome do cliente é muito grande. max = 20");
-        } else if (user.getEmail().length() > 255) {
-            throw new IllegalArgumentException("O email do usuario cadastrado é muito grande");
+
+        if (vendaDTO.isGerouDivida()) {
+            cliente.setDivida(true);
+            clienteRepository.save(cliente);
         }
-        novaVenda.setTipoDeVenda(dto.getTipoDeVenda());
-        novaVenda.setDescricao(dto.getDescricao());
-        novaVenda.setDataVenda(LocalDateTime.now());
-        novaVenda.setPlano(dto.getPlano());
-        novaVenda.setVendedor(dto.getVendedor());
 
-        List<ProdutoDTO> produtoList = produtos;
+        Venda vendaFinal = vendaRepository.save(vendaSalva);
 
-
-
-        return vendaRepo.save(novaVenda);
-    }
-    public void deletarVenda(Usuario user, Long id) {
-        Venda venda = vendaRepo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("A venda não pode ser encontrada"));
-    //User global Validation
-        if (!user.isAdmin()) {
-        throw new RuntimeException("O usuário não é um admin");
-    }
-    //repo validations
-        else if (!userRepo.existsById(user.getId())) {
-        throw new RuntimeException("O usuário não existe");
-    }
-    //Patterns
-        else if (!EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
-        throw new IllegalArgumentException("O email do usuário é inválido");
-    } else if (!NOME_USUARIO_PATTERN.matcher(user.getUserName()).matches()) {
-        throw new IllegalArgumentException("O nome do usuario é inválido");
-    }
-    //Lengths
-        else if (user.getUserName().length() > 20) {
-        throw new IllegalArgumentException("O nome do usuário é muito grande. max = 20");
+        return converterParaResponseDTO(vendaFinal, totalVenda);
     }
 
-        else if (user.getId() == null) {
-        throw new RuntimeException("O usuário não possui um id ou não foi informado.");
+    @Transactional
+    public VendaResponseDTO adicionarItemVenda(Long vendaId, VendaItemDTO itemDTO, UsuarioDTO vendedorDTO) {
+
+        Venda venda = vendaRepository.findById(vendaId)
+                .orElseThrow(() -> new RuntimeException("Sale not found!"));
+
+        if (venda.getDataVenda().plusDays(1).isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("It's not possible to add items in a sale with more than one day!");
         }
-        vendaRepo.deleteById(id);
+
+        VendaItem novoItem = criarItemVenda(itemDTO, venda);
+        venda.getItens().add(novoItem);
+
+        BigDecimal novoTotal = calcularTotalVenda(venda);
+
+        Venda vendaAtualizada = vendaRepository.save(venda);
+
+        return converterParaResponseDTO(vendaAtualizada, novoTotal);
     }
 
-    public void editarVenda(VendaDTO dto, UsuarioDTO user) {
-        Venda venda = vendaRepo.findById(dto.getId())
-                .orElseThrow(() -> new RuntimeException("A venda não pode ser encontrada ou não existe"));
+    @Transactional
+    public void removerItemVenda(Long vendaId, Long itemId, UsuarioDTO vendedorDTO) {
 
-        //verifica se o usuario é adm
-        if (!user.isAdmin()) {
-            throw new RuntimeException("O usuário não é um admin");
-        }
-        //repo validations
-        else if (!userRepo.existsById(user.getId())) {
-            throw new RuntimeException("O usuário não existe");
-        }
-        //Patterns
-        else if (!EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
-            throw new IllegalArgumentException("O email do usuário é inválido");
-        } else if (!NOME_USUARIO_PATTERN.matcher(user.getUserName()).matches()) {
-            throw new IllegalArgumentException("O nome do usuario é inválido");
-        }
-        //Lengths
-        else if (user.getUserName().length() > 20) {
-            throw new IllegalArgumentException("O nome do usuário é muito grande. max = 20");
+        // 2. BUSCAR ITEM
+        VendaItem item = vendaItemRepository.findById(itemId)
+                .orElseThrow(() -> new RuntimeException("Item não encontrado"));
+
+        // 3. VERIFICAR SE PERTENCE À VENDA
+        if (!item.getVenda().getId().equals(vendaId)) {
+            throw new RuntimeException("Item não pertence a esta venda");
         }
 
-        else if (user.getId() == null) {
-            throw new RuntimeException("O usuário não possui um id ou não foi informado.");
+        // 4. REMOVER ITEM
+        vendaItemRepository.delete(item);
+    }
+
+    // ==================== CONSULTAS ====================
+
+    public VendaResponseDTO buscarVendaPorId(Long id, UsuarioDTO vendedorDTO) {
+
+        Venda venda = vendaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Venda não encontrada"));
+
+        BigDecimal total = calcularTotalVenda(venda);
+        return converterParaResponseDTO(venda, total);
+    }
+
+    public List<VendaResponseDTO> listarVendasPorVendedor(UsuarioDTO vendedorDTO) {
+
+        Usuario vendedor = usuarioRepository.findById(vendedorDTO.getId())
+                .orElseThrow(() -> new RuntimeException("Vendedor não encontrado"));
+
+        List<Venda> vendas = vendaRepository.findByVendedor(vendedor);
+
+        return vendas.stream()
+                .map(venda -> {
+                    BigDecimal total = calcularTotalVenda(venda);
+                    return converterParaResponseDTO(venda, total);
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<VendaResponseDTO> listarVendasPorCliente(Long clienteId, UsuarioDTO vendedorDTO) {
+
+        Cliente cliente = clienteRepository.findById(clienteId)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+
+        List<Venda> vendas = vendaRepository.findByCliente(cliente);
+
+        return vendas.stream()
+                .map(venda -> {
+                    BigDecimal total = calcularTotalVenda(venda);
+                    return converterParaResponseDTO(venda, total);
+                })
+                .collect(Collectors.toList());
+    }
+
+    // ==================== MÉTODOS PRIVADOS ====================
+
+    private VendaItem criarItemVenda(VendaItemDTO itemDTO, Venda venda) {
+        // 1. BUSCAR PRODUTO
+        Produto produto = produtoRepository.findById(itemDTO.getProdutoId())
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + itemDTO.getProdutoId()));
+
+        // 2. VALIDAR ESTOQUE (se tiver)
+        if (itemDTO.getQuantidade() <= 0) {
+            throw new IllegalArgumentException("Quantidade deve ser maior que zero");
         }
 
-        List<Produto> produtos = produtoRepo.findAllById(dto.getProdutos()
-                .stream()
-                .map(ProdutoDTO::getId)
-                .collect(Collectors.toList()));
+        // 3. CRIAR ITEM
+        VendaItem item = new VendaItem();
+        item.setVenda(venda);
+        item.setProduto(produto);
+        item.setQuantidade(itemDTO.getQuantidade());
 
-        venda.atualizarProduto(produtos);
-        venda.setPlano(dto.getPlano());
-        venda.setTipoDeVenda(dto.getTipoDeVenda());
-        venda.setDescricao(dto.getDescricao());
-        venda.setPlano(dto.getPlano());
-        venda.setVendedor(dto.getVendedor());
+        // 4. DEFINIR PREÇO (pode vir do DTO ou do produto)
+        if (itemDTO.getPrecoUnitario() != null) {
+            item.setPrecoUnitario(itemDTO.getPrecoUnitario());
+        } else {
+            item.setPrecoUnitario(produto.getValor());
+        }
 
-        vendaRepo.save(venda);
+        return item;
     }
 }

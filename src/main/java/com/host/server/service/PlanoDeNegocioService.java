@@ -1,27 +1,31 @@
 package com.host.server.service;
 
-import com.host.server.model.DTO.UsuarioDTO;
-import com.host.server.model.Entitys.PlanoDeNegocio;
+import com.host.server.model.dto.UsuarioDTO;
+import com.host.server.model.entitys.PlanoDeNegocio;
 import com.host.server.repository.PlanoDeNegocioRepository;
-import com.host.server.repository.UsuarioRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
+
+@Service
 public class PlanoDeNegocioService {
 
     @Autowired
     private PlanoDeNegocioRepository planoRepo;
 
-    @Autowired
-    private PatternValidationService patternValidationService;
+    private ValidationService validationService;
 
-    @Autowired
-    private UsuarioRepository userRepo;
+    public List<PlanoDeNegocio> listarPlanos() {
+        return planoRepo.findAll();
+    }
 
     public PlanoDeNegocio cadastrarPlanoDeNegocio(PlanoDeNegocio plano, UsuarioDTO user) {
         PlanoDeNegocio novoPlano = new PlanoDeNegocio();
         //Validations
-        patternValidationService.validateUser(user);
-        patternValidationService.validatePlanoDeNegocioToCreate(plano);
+        validationService.validateUser(user);
+        validationService.validatePlanoDeNegocioToCreate(plano);
 
         novoPlano.setTipoDePlano(plano.getTipoDePlano());
         novoPlano.setDescricao(plano.getDescricao());
@@ -29,5 +33,19 @@ public class PlanoDeNegocioService {
         novoPlano.setValor(plano.getValor());
 
         return planoRepo.save(novoPlano);
+    }
+
+    public void deletarPlano(UsuarioDTO user, Long id) {
+        validationService.validateUser(user);
+        planoRepo.deleteById(id);
+    }
+
+    public void editarPlano(PlanoDeNegocio plano) {
+        PlanoDeNegocio planoExistente = planoRepo.findById(plano.getId())
+                .orElseThrow(()-> new EntityNotFoundException("The plan selected doesn't exists!"));
+
+        planoExistente.setDescricao(plano.getDescricao());
+        planoExistente.setProdutos(plano.getProdutos());
+        planoExistente.setValor(plano.getValor());
     }
 }

@@ -1,4 +1,4 @@
-package com.host.server.model.DTO.loginAuth;
+package com.host.server.model.dto.loginauth;
 
 public class ErrorLoginResponse {
 

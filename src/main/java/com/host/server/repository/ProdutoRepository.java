@@ -1,7 +1,7 @@
 package com.host.server.repository;
 
 
-import com.host.server.model.Entitys.Produto;
+import com.host.server.model.entitys.Produto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

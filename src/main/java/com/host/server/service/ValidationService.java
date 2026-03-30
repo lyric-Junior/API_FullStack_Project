@@ -1,21 +1,25 @@
 package com.host.server.service;
 
 
-import com.host.server.model.DTO.ClienteDTO;
-import com.host.server.model.DTO.UsuarioDTO;
-import com.host.server.model.Entitys.PlanoDeNegocio;
+import com.host.server.model.dto.ClienteDTO;
+import com.host.server.model.dto.UsuarioDTO;
+import com.host.server.model.entitys.PlanoDeNegocio;
+import com.host.server.model.entitys.Venda;
 import com.host.server.repository.ClienteRepository;
 import com.host.server.repository.PlanoDeNegocioRepository;
 import com.host.server.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.password.CompromisedPasswordException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.util.regex.Pattern;
 
-public class PatternValidationService {
+@Service
+public class ValidationService {
 
     @Autowired
-    private UsuarioRepository userRepo;
+    private UsuarioRepository usuarioRepository;
 
     @Autowired
     private ClienteRepository clienteRepo;
@@ -37,8 +41,8 @@ public class PatternValidationService {
 
     public void validateUser(UsuarioDTO user) {
         //repo validations
-        if (!userRepo.existsById(user.getId())) {
-            throw new RuntimeException("O usuário não existe");
+        if (!usuarioRepository.existsById(user.getId())) {
+            throw new UsernameNotFoundException("The user doesn't exists!");
         }
         //Patterns
         else if (!EMAIL_PATTERN.matcher(user.getEmail()).matches()) {
@@ -61,13 +65,13 @@ public class PatternValidationService {
     public void validateCliente(ClienteDTO cliente) {
         //Client Validations
         if(cliente.getNome().length() > 100) {
-            throw new IllegalArgumentException("O nome do cliente é inválido. max = 100 caracteres");
+            throw new IllegalArgumentException("The client name is invalid!. max = 100");
         } else if(cliente.getCpf().length() > 11 ) {
-            throw new IllegalArgumentException("O CPF do cliente é inválido. max = 11 caracteres ");
+            throw new IllegalArgumentException("The client CPF is too big!. max = 11 caracteres ");
         } else if(clienteRepo.existsById(cliente.getId())) {
-            throw new RuntimeException("O cliente já está cadastrado dentro do sistema");
+            throw new RuntimeException("The account already exists!");
         } else if (cliente.getSenha().length() < 8) {
-            throw new CompromisedPasswordException("A senha do cliente não é válida. min = 8");
+            throw new CompromisedPasswordException("The client password is not valid!. min = 8");
         } else if (cliente.getEmail() == null){
             throw new IllegalArgumentException("The email can't be empty!");
         }
@@ -81,7 +85,7 @@ public class PatternValidationService {
     public void validatePlanoDeNegocioToCreate(PlanoDeNegocio plano) {
         if (planoRepo.existsById(plano.getId())) {
             throw new RuntimeException("This plan already exists!");
-        } else if (plano.getProdutos() == null || plano.getProdutos().size() == 0) {
+        } else if (plano.getProdutos() == null) {
             throw new RuntimeException("The products list can't be empty!");
         } else if (!NOME_PRODUTO_PATTERN.matcher(plano.getTipoDePlano()).matches()) {
             throw new IllegalArgumentException("The plan type is not valid!");
