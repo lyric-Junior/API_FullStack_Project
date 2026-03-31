@@ -36,10 +36,8 @@ public class UsuarioService {
     }
 
     @Transactional
-    public String cadastrarUsuario(Usuario user, UsuarioDTO dto) {
+    public String cadastrarUsuario(Usuario user) {
         Usuario novoUsuario = new Usuario();
-
-        validationService.validateUser(dto);
 
         String senhaHash = securityConfig.passwordEncoder().encode(user.getSenhaHash());
         String cpfHash = securityConfig.passwordEncoder().encode(user.getCpfHash());

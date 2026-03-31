@@ -24,7 +24,7 @@ public class Usuario {
     private String email;
 
     @Getter @Setter
-    @Column(unique = true, nullable = true)
+    @Column(nullable = true)
     public boolean admin;
 
     @Getter @Setter
