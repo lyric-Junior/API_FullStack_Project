@@ -24,8 +24,6 @@ public class UsuarioService {
     @Autowired
     private SecurityConfig securityConfig;
 
-    private ValidationService validationService;
-
     private UsuarioDTO convertUserToDTO(Usuario user) {
         UsuarioDTO dto = new UsuarioDTO();
 
@@ -33,6 +31,13 @@ public class UsuarioService {
         dto.setEmail(user.getEmail());
         dto.setAdmin(user.isAdmin());
         return dto;
+    }
+
+    @Transactional
+    public List<UsuarioDTO> listarUsuarios() {
+        return usuarioRepository.findAll().stream()
+                .map(this::convertUserToDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -48,9 +53,12 @@ public class UsuarioService {
         novoUsuario.setUserName(user.getUserName());
         novoUsuario.setDataDeCadastro(LocalDateTime.now());
 
+        usuarioRepository.save(novoUsuario);
+
         return ("Cliente " + user.getUserName() + "cadastrado com sucesso!");
     }
 
+    @Transactional
     public void editarUsuario(Usuario user) {
         Usuario user1 = usuarioRepository.findById(user.getId())
                 .orElseThrow(()-> new EntityNotFoundException("The user couldn't be found!"));
@@ -62,13 +70,8 @@ public class UsuarioService {
         usuarioRepository.save(user1);
     }
 
-    public void deletarCliente(Long id) {
+    @Transactional
+    public void deletarUsuario(Long id) {
         usuarioRepository.deleteById(id);
-    }
-
-    public List<UsuarioDTO> listarClientes() {
-        return usuarioRepository.findAll().stream()
-                .map(this::convertUserToDTO)
-                .collect(Collectors.toList());
     }
 }

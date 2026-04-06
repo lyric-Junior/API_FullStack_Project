@@ -21,10 +21,9 @@ public class PlanoDeNegocioService {
         return planoRepo.findAll();
     }
 
-    public PlanoDeNegocio cadastrarPlanoDeNegocio(PlanoDeNegocio plano, UsuarioDTO user) {
+    public PlanoDeNegocio cadastrarPlanoDeNegocio(PlanoDeNegocio plano) {
         PlanoDeNegocio novoPlano = new PlanoDeNegocio();
-        //Validations
-        validationService.validateUser(user);
+
         validationService.validatePlanoDeNegocioToCreate(plano);
 
         novoPlano.setTipoDePlano(plano.getTipoDePlano());
@@ -35,8 +34,7 @@ public class PlanoDeNegocioService {
         return planoRepo.save(novoPlano);
     }
 
-    public void deletarPlano(UsuarioDTO user, Long id) {
-        validationService.validateUser(user);
+    public void deletarPlano(Long id) {
         planoRepo.deleteById(id);
     }
 

@@ -16,7 +16,7 @@ public class ClienteController {
     @Autowired
     private ClienteService service;
 
-    @PostMapping
+    @PostMapping("/cadastrarCliente")
     public ResponseEntity<String> cadastrarCliente(@RequestBody ClienteDTO cliente,
             Authentication auth) {
 
@@ -24,10 +24,10 @@ public class ClienteController {
 
         service.cadastrarCliente(cliente);
 
-        return ResponseEntity.ok("Client registered successfully!");
+        return ResponseEntity.ok("Client" + username + " registered successfully!");
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("deletarCliente/{id}")
     public ResponseEntity<String> deletarCliente(@PathVariable Long id, Authentication auth) {
         String username = auth.getName();
 
@@ -36,7 +36,7 @@ public class ClienteController {
         return ResponseEntity.ok("The client was deleted successfully!");
     }
 
-    @GetMapping
+    @GetMapping("/listarClientes")
     public ResponseEntity<List<ClienteDTO>> listarClientes(Authentication auth) {
         //Antes usavamos DTO's para validação e agora usaremos apenas o JWT.
         List<ClienteDTO> lista = service.listarClientes();
@@ -44,7 +44,7 @@ public class ClienteController {
         return ResponseEntity.ok(lista);
     }
 
-    @PutMapping
+    @PutMapping("/editarCliente")
     public ResponseEntity<String> editarCliente(@RequestBody ClienteDTO cliente, Authentication auth) {
         service.editarCliente(cliente);
 

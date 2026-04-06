@@ -61,6 +61,7 @@ public class ProdutoService {
         novoProduto.setDescricao(produtoDTO.getDescricao());
         novoProduto.setNome(produtoDTO.getNome().toUpperCase());
         novoProduto.setUltimaModificacao(LocalDateTime.now());
+        novoProduto.setDataDeCadastro(LocalDateTime.now());
 
         return produtoRepository.save(novoProduto);
     }
