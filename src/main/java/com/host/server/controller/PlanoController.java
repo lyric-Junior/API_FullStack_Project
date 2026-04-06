@@ -18,7 +18,7 @@ public class PlanoController {
     @Autowired
     private PlanoDeNegocioService service;
 
-    @GetMapping
+    @GetMapping("/listarPlanos")
     public ResponseEntity<List<PlanoDeNegocio>> listarPlanos() {
         return ResponseEntity.ok(service.listarPlanos());
     }

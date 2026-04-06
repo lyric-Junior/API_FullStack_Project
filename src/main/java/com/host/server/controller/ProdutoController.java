@@ -16,18 +16,18 @@ public class ProdutoController {
     @Autowired
     private ProdutoService service;
 
-    @GetMapping
+    @GetMapping("/listarProdutos")
     public ResponseEntity<List<ProdutoDTO>> listarProdutos(Authentication auth) {
         return ResponseEntity.ok(service.listarProdutos());
     }
 
-    @PostMapping
+    @PostMapping("/cadastrarProduto")
     public ResponseEntity<String> cadastrarProduto(@RequestBody ProdutoDTO dto, Authentication auth) {
         service.cadastrarProduto(dto);
         return ResponseEntity.ok("Client " + auth.getName() + "registered successfully!");
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("deletarProduto/{id}")
     public ResponseEntity<String> deletarProduto(Authentication auth, @PathVariable Long id) {
         service.deletarProduto(id);
         return ResponseEntity.ok("The client was successfully deleted!");
