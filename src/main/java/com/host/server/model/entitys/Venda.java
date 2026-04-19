@@ -30,9 +30,10 @@ public class Venda {
     @Min(5)
     private String tipoDeVenda;
 
-    @Getter @Setter
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plano_id")
+    @Getter @Setter
     private PlanoDeNegocio plano;
 
     @Getter @Setter

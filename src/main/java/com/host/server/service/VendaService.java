@@ -192,9 +192,15 @@ public class VendaService {
                 .collect(Collectors.toList());
     }
 
-    public List<VendaResponseDTO> listarVendasPorCliente(Long clienteId, UsuarioDTO vendedorDTO) {
+    public List<VendaDTO> listarVendas() {
+        List<Venda> vendas = vendaRepository.findAll();
 
-        Cliente cliente = clienteRepository.findById(clienteId)
+        return vendas.stream().map(this::convertVendaToDTO).collect(Collectors.toList());
+    }
+
+    public List<VendaResponseDTO> listarVendasPorCliente(String nome) {
+
+        Cliente cliente = clienteRepository.findByNomeContainingIgnoreCase(nome)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
 
         List<Venda> vendas = vendaRepository.findByCliente(cliente);
@@ -207,25 +213,37 @@ public class VendaService {
                 .collect(Collectors.toList());
     }
 
-    // ==================== MÉTODOS PRIVADOS ====================
+    //Métodos Privados
+
+    private VendaDTO convertVendaToDTO(Venda venda) {
+        VendaDTO dto = new VendaDTO();
+
+        dto.setClienteId(venda.getId());
+        dto.setDescricao(venda.getDescricao());
+        dto.setItens(venda.getItens());
+        dto.setTipoDeVenda(venda.getTipoDeVenda());
+        dto.setPlano(venda.getPlano());
+
+        return dto;
+    }
 
     private VendaItem criarItemVenda(VendaItemDTO itemDTO, Venda venda) {
-        // 1. BUSCAR PRODUTO
+
         Produto produto = produtoRepository.findById(itemDTO.getProdutoId())
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + itemDTO.getProdutoId()));
 
-        // 2. VALIDAR ESTOQUE (se tiver)
+
         if (itemDTO.getQuantidade() <= 0) {
             throw new IllegalArgumentException("Quantidade deve ser maior que zero");
         }
 
-        // 3. CRIAR ITEM
+
         VendaItem item = new VendaItem();
         item.setVenda(venda);
         item.setProduto(produto);
         item.setQuantidade(itemDTO.getQuantidade());
 
-        // 4. DEFINIR PREÇO (pode vir do DTO ou do produto)
+
         if (itemDTO.getPrecoUnitario() != null) {
             item.setPrecoUnitario(itemDTO.getPrecoUnitario());
         } else {

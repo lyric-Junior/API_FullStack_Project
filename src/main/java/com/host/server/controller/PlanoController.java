@@ -33,7 +33,5 @@ public class PlanoController {
         service.deletarPlano(id);
         return ResponseEntity.ok("The plan was successfully deleted!");
     }
-
-
 }
 
